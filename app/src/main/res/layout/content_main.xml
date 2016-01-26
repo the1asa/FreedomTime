@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.asabritten.barebonesfreedom.MainActivity"
+    tools:showIn="@layout/activity_main"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/ll_main_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:background="@drawable/dark_blue_rounded_corner_rectangle">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="10dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Date"
+                android:textAlignment="center"
+                android:background="@drawable/blue_rounded_corner_rectangle"
+                android:textColor="@android:color/white"/>
+
+            <ImageButton
+                android:id="@+id/ib_calendar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/dark_blue_rounded_corner_rectangle"
+                android:layout_gravity="center"
+                android:src="@drawable/calendar"></ImageButton>
+
+            <TextView
+                android:id="@+id/tv_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="10dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/tv_clock_in_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:text=" In "
+                android:background="@drawable/blue_rounded_corner_rectangle"
+                android:textColor="@android:color/white"/>
+
+            <ImageButton
+                android:id="@+id/in_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/dark_blue_rounded_corner_rectangle"
+                android:src="@drawable/clock_in"
+                android:text="Clock in: "></ImageButton>
+
+            <TextView
+                android:id="@+id/tv_clock_in"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="10dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/tv_clock_out_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:text=" Out "
+                android:background="@drawable/blue_rounded_corner_rectangle"
+                android:textColor="@android:color/white"/>
+
+            <ImageButton
+                android:id="@+id/out_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/dark_blue_rounded_corner_rectangle"
+                android:src="@drawable/clock_out"
+                android:text="Clock out: "></ImageButton>
+
+            <TextView
+                android:id="@+id/tv_clock_out"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="5dp"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/ibAddShift"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="3dp"
+            android:shadowColor="#FFFFFF"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
+            android:src="@drawable/plus"
+            android:background="@drawable/blue_circle"></ImageButton>
+    </LinearLayout>
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/dark_blue_rounded_corner_rectangle"
+        android:id="@+id/sv_shift_holder"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:id="@+id/ll_shift_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="5dp"></LinearLayout>
+
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/ll_pay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        >
+
+        <TextSwitcher
+            android:id="@+id/ts_total_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HOURS"
+            />
+
+        <TextSwitcher
+            android:id="@+id/ts_pay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PAY"
+            android:background="@drawable/green_rounded_corner"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>
+

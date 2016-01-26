@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Freedom Time</string>
+    <string name="action_settings">Settings</string>
+    <string name="tv_select">Select day: </string>
+    <string name="tv_in_time">Clock in time: </string>
+    <string name="tv_out_time">Clock out time: </string>
+    <string name="b_ibAddShift">Calculate</string>
+    <string name="action_help">Enter a date, clock-in, and clock-out times for a position and
+                                press the \'+\' button. \n\nThe \'$\' button calculates total hours worked and
+                                estimated pay (before tax). \n\nTo calculate hours and pay for another
+                                position, remove all the times entered by pressing the \'x\' button.</string>
+    <string name="action_about">Times are rounded as following:\n\n0-7 minutes = 0.0\n8-22 minutes
+                                = 0.25\n23-37 minutes = 0.5\n38-52 minutes = 0.75\n53-60 minutes = 1.0\n\n
+                                Check all times entered for accuracy.\n\nIcons are courtesy of www.icons8.com</string>
+
+    <string-array name="days">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
+</resources>
