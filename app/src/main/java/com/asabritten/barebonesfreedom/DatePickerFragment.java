@@ -6,13 +6,10 @@ import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.format.DateFormat;
-import android.widget.TextView;
 import android.widget.DatePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
@@ -39,12 +36,12 @@ public class DatePickerFragment extends DialogFragment //implements TimePickerDi
 
             Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
 
-            SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
-            SimpleDateFormat fullDateFormat = new SimpleDateFormat("M/dd/yy", Locale.US);
-            //SimpleDateFormat fullDateFormat = new SimpleDateFormat("MMM-dd-yyyy");
+            SimpleDateFormat imageDateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
+            //SimpleDateFormat fullDateFormat = new SimpleDateFormat("M/dd/yy", Locale.US);
+            SimpleDateFormat fullDateFormat = new SimpleDateFormat("dd-MMM-yyyy");
 
             String fullDate = fullDateFormat.format(cal.getTime());
-            String dayOfWeek = dayFormat.format(cal.getTime());
+            String imageDate = imageDateFormat.format(cal.getTime());
 
 //            // hacky, SimpleDateFormat.format(Date date) gives one day ahead with custom Date's
 //            Date date = new Date(year, monthOfYear, dayOfMonth - 1);
@@ -56,8 +53,8 @@ public class DatePickerFragment extends DialogFragment //implements TimePickerDi
 
             Message msg = new Message();
             Bundle data = new Bundle();
-            data.putString("FULL_DATE", fullDate);
-            data.putString("DAY_OF_WEEK", dayOfWeek);
+            data.putString("FULL_DATE", fullDate.toUpperCase());
+            data.putString("IMAGE_DATE", imageDate);
             msg.setData(data);
             h.sendMessage(msg);
         }

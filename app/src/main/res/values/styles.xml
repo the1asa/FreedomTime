@@ -37,6 +37,7 @@
            parent="@style/TextAppearance.AppCompat.Widget.PopupMenu.Large">
         <item name="android:textColor">@android:color/white</item>
     </style>
+
     <style name="PopupTextStyleSmall"
            parent="@style/TextAppearance.AppCompat.Widget.PopupMenu.Small">
         <item name="android:textColor">@android:color/white</item>

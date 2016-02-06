@@ -1,19 +1,16 @@
 package com.asabritten.barebonesfreedom;
 
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.TextView;
-
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by t410 on 1/2/2016.
  */
-public class ShiftGroup
+public class ShiftGroup implements Serializable//implements Parcelable, Serializable
 {
-    private HashMap<ImageButton, Shift> times;
+    private HashMap<String, Double> times;
     private double payRate, totalHours;
 
     public ShiftGroup()
@@ -21,42 +18,47 @@ public class ShiftGroup
         times = new HashMap<>();
     }
 
-    public void addShift(ImageButton ibDelete, Shift s)
+    public void addShift(String date, Double hours)
     {
-        times.put(ibDelete, s);
-        totalHours += s.getHoursWorked();
+        totalHours += hours;
+
+        if (times.get(date) != null)
+        {
+            hours += times.get(date);
+        }
+
+        times.put(date, hours);
+
+        System.out.println(totalHours);
     }
 
-    private Shift getShift(View v)
+    public ArrayList<String> getDates()
     {
-        return times.get(v);
+        ArrayList<String> dates = new ArrayList<String>();
+
+        for (Map.Entry<String, Double> e : times.entrySet())
+        {
+            dates.add(e.getKey());
+        }
+
+        return dates;
     }
 
-    public void removeShift(View v)
+    public Double getHours(String date)
     {
-        totalHours -= getShift(v).getHoursWorked();
-        times.remove(v);
+        return times.get(date);
+    }
+
+    public void removeHours(String date)
+    {
+        totalHours -= times.get(date);
+        times.remove(date);
     }
 
     public void setPayRate(double payRate)
     {
         this.payRate = payRate;
     }
-
-//    private double calculateTotalHours()
-//    {
-//        double totalHours = 0;
-//        for (Map.Entry e : times.entrySet())
-//        {
-//            System.out.println(e.getKey().toString());
-//            System.out.println(e.getValue().toString());
-//
-//            Shift s = (Shift)e.getValue();
-//            totalHours += s.getHoursWorked();
-//        }
-//
-//        return totalHours;
-//    }
 
     public double getTotalPay()
     {
@@ -66,6 +68,18 @@ public class ShiftGroup
     public double getTotalHours()
     {
         return totalHours;
+    }
+
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (Map.Entry<String, Double> e : times.entrySet())
+        {
+            sb.append(e.getKey() + ": " + e.getValue() + "\n");
+        }
+
+        return sb.toString();
     }
 
 

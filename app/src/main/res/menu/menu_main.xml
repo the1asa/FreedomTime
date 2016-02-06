@@ -4,6 +4,18 @@
       tools:context="com.asabritten.barebonesfreedom.MainActivity">
 
     <item
+        android:id="@+id/action_timesheet"
+        android:icon="@drawable/export"
+        android:title="Timesheet"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_password"
+        android:icon="@drawable/password"
+        android:title="Password"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/action_help"
         android:icon="@drawable/help"
         android:title="Help"

@@ -1,54 +1,34 @@
 package com.asabritten.barebonesfreedom;
 
-import android.animation.LayoutTransition;
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.View;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
-import android.widget.PopupWindow;
-import android.widget.Spinner;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -57,17 +37,18 @@ public class MainActivity extends AppCompatActivity
     // Displays delete button for a shift
     private ImageButton ibDelete;
     // Displays date information for a shift
-    private TextView tvShiftDisplay;
+    private TextView tvShiftDisplay, tvShiftList;
     // Holds LinearLayouts containing shift information
     private LinearLayout llShiftHolder;
     // From TimePickerDialog, used to calculate shift time
     private int inHour, outHour, inMinute, outMinute;
     // From DatePickerDialog, used to display shift date
-    private String dayOfWeek, fullDate;
+    private String imageDate, fullDate;
 
     private TextSwitcher totalHoursDisplay, payDisplay;
 
     private Animation fadeIn, fadeOut;
+
 
 
     // Handler for DatePickerFragment
@@ -76,7 +57,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void handleMessage(Message msg)
         {
-            dayOfWeek = msg.getData().getString("DAY_OF_WEEK");
+            imageDate = msg.getData().getString("IMAGE_DATE");
             fullDate = msg.getData().getString("FULL_DATE");
 
             printDate();
@@ -214,8 +195,15 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
 
-                loadShiftDisplay(hours);
+                if (fullDate == null)
+                {
+                    Toast.makeText(MainActivity.this,
+                            "You must enter a date first",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
+                loadShiftDisplay(hours);
             }
         });
     }
@@ -224,62 +212,6 @@ public class MainActivity extends AppCompatActivity
     // Sets up and displays date and hours worked for a shift
     private void loadShiftDisplay(double hours)
     {
-        LinearLayout.LayoutParams tvParam = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, .95f);
-
-        tvShiftDisplay = new TextView(MainActivity.this);
-        tvShiftDisplay.setLayoutParams(tvParam);
-        if (dayOfWeek == null || fullDate == null)
-            tvShiftDisplay.setText(String.valueOf(hours));
-        else
-            tvShiftDisplay.setText(dayOfWeek + ", " + fullDate + "\n" + hours);
-        tvShiftDisplay.setTextSize(20);
-        tvShiftDisplay.setGravity(Gravity.CENTER);
-        tvShiftDisplay.setTextColor(Color.BLACK);
-
-        LinearLayout.LayoutParams bParam = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, .05f);
-
-        ibDelete = new ImageButton(MainActivity.this);
-        ibDelete.setLayoutParams(bParam);
-        ibDelete.setImageResource(R.drawable.delete_no_border);
-        ibDelete.setBackgroundColor(Color.parseColor("#cee9f8"));
-
-        // Removes shift layout
-        ibDelete.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View view)
-            {
-                //ViewGroup vg = (ViewGroup)sg.getShift(view).getDisplay().getParent();
-                final ViewGroup vg = (ViewGroup) view.getParent();
-                fadeOut.setAnimationListener(new Animation.AnimationListener()
-                {
-                    @Override
-                    public void onAnimationStart(Animation animation)
-                    {
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation)
-                    {
-                        MainActivity.this.llShiftHolder.removeView(vg);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation)
-                    {
-                    }
-                });
-                vg.startAnimation(fadeOut);
-
-
-                //llShiftHolder.removeView(vg);
-                //llShiftHolder.removeView((ViewGroup) sg.getShift(view).getDisplay().getParent());
-                sg.removeShift(view);
-            }
-        });
 
         final LinearLayout llShift = new LinearLayout(MainActivity.this);
 
@@ -292,21 +224,95 @@ public class MainActivity extends AppCompatActivity
         llShift.setBackgroundResource(R.drawable.light_blue_rounded_corner_rectangle);
         llShift.setOrientation(LinearLayout.HORIZONTAL);
         llShift.setPadding(5, 5, 5, 5);
-        llShift.addView(tvShiftDisplay);
-        llShift.addView(ibDelete);
 
-        llShiftHolder.addView(llShift, 0);
 
-        llShift.startAnimation(fadeIn);
+        LinearLayout.LayoutParams tvParam = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, .95f);
 
-        sg.addShift(ibDelete, new Shift(hours, tvShiftDisplay));
+        if (sg.getHours(fullDate) != null)
+        {
+            for (int i = 0; i < llShiftHolder.getChildCount(); i++)
+            {
+                LinearLayout shift = (LinearLayout) llShiftHolder.getChildAt(i);
+                tvShiftDisplay = (TextView) shift.getChildAt(0);
+                String d = tvShiftDisplay.getText().toString();
+                if (d.contains(fullDate))
+                {
+                    Double newHours = hours + Double.valueOf(d.substring(d.indexOf("\n"), d.length()));
+                    tvShiftDisplay.setText(fullDate + "\n" + newHours);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            tvShiftDisplay = new TextView(MainActivity.this);
+            tvShiftDisplay.setLayoutParams(tvParam);
+            tvShiftDisplay.setText(fullDate + "\n" + hours);
+            tvShiftDisplay.setTextSize(20);
+            tvShiftDisplay.setGravity(Gravity.CENTER);
+            tvShiftDisplay.setTextColor(Color.BLACK);
+            llShift.addView(tvShiftDisplay);
+
+            LinearLayout.LayoutParams bParam = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, .05f);
+
+            ibDelete = new ImageButton(MainActivity.this);
+            ibDelete.setLayoutParams(bParam);
+            ibDelete.setImageResource(R.drawable.delete_no_border);
+            ibDelete.setBackgroundColor(Color.parseColor("#cee9f8"));
+
+            // Removes shift layout
+            ibDelete.setOnClickListener(new View.OnClickListener()
+            {
+                public void onClick(View view)
+                {
+                    final ViewGroup vg = (ViewGroup) view.getParent();
+
+                    TextView display = (TextView) vg.getChildAt(0);
+                    String displayText = display.getText().toString();
+                    // Gets only the date text from display
+                    String displayDate = displayText.substring(0, displayText.indexOf("\n"));
+
+                    fadeOut.setAnimationListener(new Animation.AnimationListener()
+                    {
+                        @Override
+                        public void onAnimationStart(Animation animation)
+                        {
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation)
+                        {
+                            MainActivity.this.llShiftHolder.removeView(vg);
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation)
+                        {
+                        }
+                    });
+                    vg.startAnimation(fadeOut);
+
+                    sg.removeHours(displayDate);
+                }
+            });
+
+            llShift.addView(ibDelete);
+            llShiftHolder.addView(llShift, 0);
+            llShift.startAnimation(fadeIn);
+        }
+
+        sg.addShift(fullDate, hours);
     }
 
     // Prints date given by DatePickerFragment
     private void printDate()
     {
         TextView tvDate = (TextView) findViewById(R.id.tv_date);
-        tvDate.setText(fullDate);
+        tvDate.setText(imageDate);
     }
 
     // Starts DatePickerFragment
@@ -326,7 +332,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     // Calculates time based on information from TimePickerFragment
-    private double calculateTime()
+    private double calculateTime() throws IllegalStateException
     {
         int totalInMinutes = (inHour * 60) + inMinute;
         int totalOutMinutes = (outHour * 60) + outMinute;
@@ -404,7 +410,7 @@ public class MainActivity extends AppCompatActivity
         if (m < 10)
             minute = "0" + minute;
 
-        return new String(hour + " : " + minute + amPM);
+        return hour + " : " + minute + amPM;
     }
 
     @Override
@@ -415,6 +421,116 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    protected void onPause()
+    {
+        super.onPause();
+
+        System.out.println("MAIN Paused");
+    }
+
+    protected void onStop()
+    {
+        super.onStop();
+
+        System.out.println("MAIN Stopped");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState)
+    {
+        savedInstanceState.putSerializable("SG", sg);
+
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        // Always call the superclass so it can restore the view hierarchy
+        super.onRestoreInstanceState(savedInstanceState);
+        sg = (ShiftGroup) savedInstanceState.getSerializable("SG");
+    }
+
+    public void onContinueButtonPressed(View v)
+    {
+        startActivity(new Intent(this, TimesheetActivity.class).putExtra("SG", sg));
+    }
+
+    private void setAlertDialog()
+    {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        String message = "";
+        if (sg.toString().isEmpty())
+        {
+            message = "No shifts entered!";
+        } else
+        {
+            message = "The following shifts will be entered into a time sheet of your choosing:\n\n"
+                    + sg.toString();
+        }
+
+        builder.setTitle("Verify Shifts");
+        builder.setMessage(message);
+
+        builder.setPositiveButton("Continue", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
+                startActivity(new Intent(MainActivity.this, TimesheetActivity.class).putExtra("SG", sg));
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void setPasswordDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View v = inflater.inflate(R.layout.password_dialog, null);
+        builder.setView(v);
+
+        builder.setMessage("Enter your PatriotWeb username and password:")
+                .setTitle("Save Credentials");
+
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
+                EditText user = (EditText) v.findViewById(R.id.et_user);
+                EditText pass = (EditText) v.findViewById(R.id.et_pass);
+
+                PrefUtils.saveToPrefs(MainActivity.this, "USER", user.getText().toString());
+                PrefUtils.saveToPrefs(MainActivity.this, "PASS", pass.getText().toString());
+
+                Toast.makeText(MainActivity.this, "Your login credentials have been changed", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -423,37 +539,27 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings)
-//        {
-//            return true;
-//        }
+        if (id == R.id.action_timesheet)
+        {
+            setAlertDialog();
+        }
+
+        if (id == R.id.action_password)
+        {
+            setPasswordDialog();
+        }
 
         if (id == R.id.action_help)
         {
-            displayPopupInfo(R.layout.help_popup);
+            new PopupInfo(this, R.layout.help_popup, R.id.ll_shift_holder).display();
         }
 
         if (id == R.id.action_about)
         {
-            displayPopupInfo(R.layout.about_popup);
+            new PopupInfo(this, R.layout.about_popup, R.id.ll_shift_holder).display();
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void displayPopupInfo(int id)
-    {
-        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
-                .getSystemService(LAYOUT_INFLATER_SERVICE);
-
-        ViewGroup parent = (ViewGroup) findViewById(R.id.ll_shift_holder);
-        View popupView = layoutInflater.inflate(id, parent, false);
-
-        PopupInfo info = new PopupInfo(parent, popupView,
-                (WindowManager) getSystemService(Context.WINDOW_SERVICE));
-
-        info.display();
     }
 
 }

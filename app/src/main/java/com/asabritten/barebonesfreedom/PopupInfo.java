@@ -1,5 +1,6 @@
 package com.asabritten.barebonesfreedom;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.Gravity;
@@ -19,13 +20,16 @@ public class PopupInfo
     private final PopupWindow popupWindow;
     private WindowManager wm;
 
-    public PopupInfo(ViewGroup parent, View popupView, WindowManager wm)
+    public PopupInfo(Activity layoutActivity, int layout_id, int layout_parent)
     {
-        this.parent = parent;
-        this.popupView = popupView;
-        this.wm = wm;
+        LayoutInflater layoutInflater = (LayoutInflater) layoutActivity.getBaseContext()
+                .getSystemService(layoutActivity.LAYOUT_INFLATER_SERVICE);
 
-        this.popupWindow = new PopupWindow(popupView,
+        wm = (WindowManager) layoutActivity.getSystemService(Context.WINDOW_SERVICE);
+        parent = (ViewGroup) layoutActivity.findViewById(layout_parent);
+        popupView = layoutInflater.inflate(layout_id, parent, false);
+
+        popupWindow = new PopupWindow(popupView,
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         // Necessary to close popupWindow when background is touched
