@@ -161,6 +161,7 @@
         android:id="@+id/sv_shift_holder"
         android:layout_marginBottom="10dp">
 
+        <!-- This is where shift TextView displays are added-->
         <LinearLayout
             android:id="@+id/ll_shift_holder"
             android:layout_width="match_parent"

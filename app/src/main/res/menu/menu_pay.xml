@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+    >
 
 
     <item
         android:id="@+id/mi_lifeguard"
-        android:icon="@drawable/lifeguard"
         android:title="Lifeguard"/>
 
     <item
         android:id="@+id/mi_headguard"
-        android:icon="@drawable/headguard"
         android:title="Headguard"/>
 
     <item
         android:id="@+id/mi_wsi"
-        android:icon="@drawable/wsi"
         android:title="WSI/LGI"/>
 
 

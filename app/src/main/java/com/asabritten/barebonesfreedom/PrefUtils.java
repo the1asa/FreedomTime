@@ -5,13 +5,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 /**
- * Created by t410 on 1/31/2016.
+ * Saves user data to Shared Preferences
  */
 public class PrefUtils
 {
-    public static final String USERNAME = "";
-    public static final String PASSWORD = "";
-
     /**
      * Called to save supplied value in shared preferences against given password.
      *

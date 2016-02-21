@@ -30,63 +30,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+/**
+ * Activity that allows users to input shifts by selecting a date, a clock-in time, and a clock-out
+ * time. Once shifts are added, a user may opt to calculate total hours (rounded to GMU Payroll
+ * specifications) and total pay for either a Lifeguard, Headguard, or WSI payrate. 'Help', 'About'
+ * , and 'Password Saver' menus and dialogs are set up in the action bar. When a user has entered
+ * all shifts for a given time period, he may press the 'Timesheet' button on the action bar to
+ * start TimesheetActivity.
+ */
 public class MainActivity extends AppCompatActivity
 {
-    // Contains all the shifts in a HashMap
+    // Contains the dates and times for all worked shifts
     private ShiftGroup sg = new ShiftGroup();
-    // Displays delete button for a shift
-    private ImageButton ibDelete;
-    // Displays date information for a shift
-    private TextView tvShiftDisplay, tvShiftList;
-    // Holds LinearLayouts containing shift information
+    // Contains TextView displays of all entered shifts and is contained in a ScrollView
     private LinearLayout llShiftHolder;
-    // From TimePickerDialog, used to calculate shift time
+    // Times selected by TimePickerDialogs, used to calculate shift time
     private int inHour, outHour, inMinute, outMinute;
-    // From DatePickerDialog, used to display shift date
+    // Dates selected by DatePickerDialog, used to display shift date
     private String imageDate, fullDate;
-
+    // Displays total hours and total pay once user has selected an option presented by the
+    // floating action button
     private TextSwitcher totalHoursDisplay, payDisplay;
-
+    // Animation for deletion of TextViews containing shift information
     private Animation fadeIn, fadeOut;
-
-
-
-    // Handler for DatePickerFragment
-    private Handler cal = new Handler()
-    {
-        @Override
-        public void handleMessage(Message msg)
-        {
-            imageDate = msg.getData().getString("IMAGE_DATE");
-            fullDate = msg.getData().getString("FULL_DATE");
-
-            printDate();
-        }
-    };
-
-    // Handler for TimePickerFragment
-    private Handler in = new Handler()
-    {
-        @Override
-        public void handleMessage(Message msg)
-        {
-            inHour = msg.getData().getInt("HOUR");
-            inMinute = msg.getData().getInt("MINUTE");
-            printTime();
-        }
-    };
-
-    // Handler for TimePickerFragment
-    private Handler out = new Handler()
-    {
-        @Override
-        public void handleMessage(Message msg)
-        {
-            outHour = msg.getData().getInt("HOUR");
-            outMinute = msg.getData().getInt("MINUTE");
-            printTime();
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -95,8 +61,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
         totalHoursDisplay = (TextSwitcher) findViewById(R.id.ts_total_hours);
         totalHoursDisplay.setFactory(new ViewSwitcher.ViewFactory()
@@ -109,6 +73,9 @@ public class MainActivity extends AppCompatActivity
                 return tv;
             }
         });
+
+        totalHoursDisplay.setInAnimation(this, android.R.anim.fade_in);
+        totalHoursDisplay.setOutAnimation(this, android.R.anim.fade_out);
 
         payDisplay = (TextSwitcher) findViewById(R.id.ts_pay);
         payDisplay.setFactory(new ViewSwitcher.ViewFactory()
@@ -123,22 +90,22 @@ public class MainActivity extends AppCompatActivity
         });
 
         payDisplay.setInAnimation(this, android.R.anim.fade_in);
-        totalHoursDisplay.setInAnimation(this, android.R.anim.fade_in);
         payDisplay.setOutAnimation(this, android.R.anim.fade_out);
-        totalHoursDisplay.setOutAnimation(this, android.R.anim.fade_out);
 
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
 
-                PopupMenu popup = new PopupMenu(MainActivity.this, view);
-                MenuInflater inflater = popup.getMenuInflater();
-                inflater.inflate(R.menu.menu_pay, popup.getMenu());
-                popup.show();
+                PopupMenu payRate = new PopupMenu(MainActivity.this, view);
+                MenuInflater inflater = payRate.getMenuInflater();
+                inflater.inflate(R.menu.menu_pay, payRate.getMenu());
+                payRate.show();
 
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+                payRate.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
                 {
                     public boolean onMenuItemClick(MenuItem item)
                     {
@@ -167,8 +134,8 @@ public class MainActivity extends AppCompatActivity
 
         });
 
-        loadTime();
-        loadDate();
+        loadTimePickers();
+        loadDatePicker();
 
         // Animations
         fadeIn = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
@@ -186,7 +153,7 @@ public class MainActivity extends AppCompatActivity
 
                 try
                 {
-                    hours = calculateTime();
+                    hours = roundTime();
                 } catch (IllegalStateException e)
                 {
                     Toast.makeText(MainActivity.this,
@@ -203,16 +170,18 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
 
-                loadShiftDisplay(hours);
+                displayShift(hours);
             }
         });
     }
 
 
-    // Sets up and displays date and hours worked for a shift
-    private void loadShiftDisplay(double hours)
+    /**
+     * Layout logic to display the date and hours worked for a shift
+     */
+    private void displayShift(double hours)
     {
-
+        TextView tvShiftDisplay;
         final LinearLayout llShift = new LinearLayout(MainActivity.this);
 
         LinearLayout.LayoutParams llParam = new LinearLayout.LayoutParams(
@@ -225,11 +194,12 @@ public class MainActivity extends AppCompatActivity
         llShift.setOrientation(LinearLayout.HORIZONTAL);
         llShift.setPadding(5, 5, 5, 5);
 
-
         LinearLayout.LayoutParams tvParam = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, .95f);
 
+        // If hours have already been worked on a given date then add the hours to this date in memory,
+        // then find the TextView containing this date in the layout and alter this TextView display
         if (sg.getHours(fullDate) != null)
         {
             for (int i = 0; i < llShiftHolder.getChildCount(); i++)
@@ -239,15 +209,20 @@ public class MainActivity extends AppCompatActivity
                 String d = tvShiftDisplay.getText().toString();
                 if (d.contains(fullDate))
                 {
-                    Double newHours = hours + Double.valueOf(d.substring(d.indexOf("\n"), d.length()));
+                    Double newHours = hours +
+                            Double.valueOf(d.substring(d.indexOf("\n"), d.length()));
                     tvShiftDisplay.setText(fullDate + "\n" + newHours);
                     break;
                 }
             }
         }
+        // If hours have not been worked on this date then create a new TextView and add it to the
+        // ScrollView display
         else
         {
-            tvShiftDisplay = new TextView(MainActivity.this);
+            tvShiftDisplay = new TextView(this);
+            // Needs unique ID to be recovered on lifecycle change
+            tvShiftDisplay.setId(View.generateViewId());
             tvShiftDisplay.setLayoutParams(tvParam);
             tvShiftDisplay.setText(fullDate + "\n" + hours);
             tvShiftDisplay.setTextSize(20);
@@ -259,7 +234,9 @@ public class MainActivity extends AppCompatActivity
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.MATCH_PARENT, .05f);
 
-            ibDelete = new ImageButton(MainActivity.this);
+            ImageButton ibDelete = new ImageButton(this);
+            // Needs unique ID to be recovered on lifecycle change
+            ibDelete.setId(View.generateViewId());
             ibDelete.setLayoutParams(bParam);
             ibDelete.setImageResource(R.drawable.delete_no_border);
             ibDelete.setBackgroundColor(Color.parseColor("#cee9f8"));
@@ -272,8 +249,9 @@ public class MainActivity extends AppCompatActivity
                     final ViewGroup vg = (ViewGroup) view.getParent();
 
                     TextView display = (TextView) vg.getChildAt(0);
+                    // Get all the text in the TextView
                     String displayText = display.getText().toString();
-                    // Gets only the date text from display
+                    // Gets only the date text from the TextView
                     String displayDate = displayText.substring(0, displayText.indexOf("\n"));
 
                     fadeOut.setAnimationListener(new Animation.AnimationListener()
@@ -308,20 +286,65 @@ public class MainActivity extends AppCompatActivity
         sg.addShift(fullDate, hours);
     }
 
-    // Prints date given by DatePickerFragment
-    private void printDate()
+    /**
+     * Handler for DatePickerFragment
+     **/
+    private Handler cal = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            imageDate = msg.getData().getString("IMAGE_DATE");
+            fullDate = msg.getData().getString("FULL_DATE");
+            displayDate();
+        }
+    };
+
+    /**
+     * Handler for 'clock-in' TimePickerFragment
+     */
+    private Handler clockIn = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            inHour = msg.getData().getInt("HOUR");
+            inMinute = msg.getData().getInt("MINUTE");
+            displayTime();
+        }
+    };
+
+    /**
+     * Handler for 'clock-out' TimePickerFragment
+     */
+    private Handler clockOut = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            outHour = msg.getData().getInt("HOUR");
+            outMinute = msg.getData().getInt("MINUTE");
+            displayTime();
+        }
+    };
+
+    /**
+     * Sets a TextView to the date retrieved from DatePickerFragment
+     */
+    private void displayDate()
     {
         TextView tvDate = (TextView) findViewById(R.id.tv_date);
         tvDate.setText(imageDate);
     }
 
-    // Starts DatePickerFragment
-    private void loadDate()
+    /**
+     * Starts DatePickerFragment
+     */
+    private void loadDatePicker()
     {
         ImageButton calendar = (ImageButton) findViewById(R.id.ib_calendar);
         calendar.setOnClickListener(new View.OnClickListener()
         {
-
             @Override
             public void onClick(View v)
             {
@@ -331,8 +354,16 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    // Calculates time based on information from TimePickerFragment
-    private double calculateTime() throws IllegalStateException
+    /**
+     * Rounds total time worked as rounded by George Mason University payroll for a shift
+     * based on clock-in time and clock-out time. GMU payroll considers 0-7 minutes = 0.0,
+     * 8-22 minutes = 0.25, 23-37 minutes = 0.5, 38-52 minutes = 0.75, and 53-60 minutes = 1.0
+     *
+     * @return rounded time
+     * @throws IllegalStateException if clock-in time occurs after clock-out time for a 24 hour
+     *                               cycle
+     */
+    private double roundTime() throws IllegalStateException
     {
         int totalInMinutes = (inHour * 60) + inMinute;
         int totalOutMinutes = (outHour * 60) + outMinute;
@@ -357,8 +388,11 @@ public class MainActivity extends AppCompatActivity
         return time;
     }
 
-    // Starts TimePickerFragment
-    private void loadTime()
+    /**
+     * Displays TimePickers for clock-in and clock-out times. The TimePickers send their times to
+     * the 'clock-in' and 'clock-out' Handlers
+     */
+    private void loadTimePickers()
     {
         ImageButton inTime = (ImageButton) findViewById(R.id.in_time);
         ImageButton outTime = (ImageButton) findViewById(R.id.out_time);
@@ -368,24 +402,26 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                DialogFragment newFragment = TimePickerFragment.newInstance(in);
+                DialogFragment newFragment = TimePickerFragment.newInstance(clockIn);
                 newFragment.show(getFragmentManager(), "TimePicker");
             }
         });
-
         outTime.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                DialogFragment newFragment = TimePickerFragment.newInstance(out);
+                DialogFragment newFragment = TimePickerFragment.newInstance(clockOut);
                 newFragment.show(getFragmentManager(), "TimePicker");
             }
         });
     }
 
-    // Displays information from TimePickerFragment
-    private void printTime()
+    /**
+     * Displays time chosen from TimePickerFragment in TextViews underneath the clock-in and
+     * clock-out icons
+     */
+    private void displayTime()
     {
         TextView tvInTime = (TextView) findViewById(R.id.tv_clock_in);
         TextView tvOutTime = (TextView) findViewById(R.id.tv_clock_out);
@@ -394,7 +430,13 @@ public class MainActivity extends AppCompatActivity
         tvOutTime.setText(convert24HourTime(outHour, outMinute));
     }
 
-    // Converts 24 hour time from TimePickerFragment to displayed 12 hour time
+    /**
+     * Converts military time from TimePickerFragment to 12 hour time
+     *
+     * @param h hour from 0-23
+     * @param m minutes
+     * @return time in 12 hour format
+     */
     private String convert24HourTime(int h, int m)
     {
         String amPM = "am";
@@ -424,25 +466,30 @@ public class MainActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-
-        System.out.println("MAIN Paused");
     }
 
     protected void onStop()
     {
         super.onStop();
-
-        System.out.println("MAIN Stopped");
     }
 
     @Override
+    /**
+     * Saves the ShiftGroup object
+     *
+     * @param savedInstanceState    bundle to save data to
+     */
     public void onSaveInstanceState(Bundle savedInstanceState)
     {
         savedInstanceState.putSerializable("SG", sg);
-
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    /**
+     * Restores the ShiftGroup object
+     *
+     * @param savedInstanceState bundle with data to be restored
+     */
     public void onRestoreInstanceState(Bundle savedInstanceState)
     {
         // Always call the superclass so it can restore the view hierarchy
@@ -450,14 +497,12 @@ public class MainActivity extends AppCompatActivity
         sg = (ShiftGroup) savedInstanceState.getSerializable("SG");
     }
 
-    public void onContinueButtonPressed(View v)
-    {
-        startActivity(new Intent(this, TimesheetActivity.class).putExtra("SG", sg));
-    }
-
+    /**
+     * Builds AlertDialog to confirm whether user wants to enter the specified times into Patriot
+     * Web and displays the saved shifts to be entered.
+     */
     private void setAlertDialog()
     {
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         String message = "";
@@ -477,7 +522,8 @@ public class MainActivity extends AppCompatActivity
         {
             public void onClick(DialogInterface dialog, int id)
             {
-                startActivity(new Intent(MainActivity.this, TimesheetActivity.class).putExtra("SG", sg));
+                startActivity(new Intent(MainActivity.this, TimesheetActivity.class)
+                        .putExtra("SG", sg));
             }
         });
 
@@ -493,6 +539,10 @@ public class MainActivity extends AppCompatActivity
         dialog.show();
     }
 
+    /**
+     * Builds AlertDialog for user to change their stored username and password.
+     * This saved username and password is input into the PatriotWeb WebView.
+     */
     private void setPasswordDialog()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -514,7 +564,8 @@ public class MainActivity extends AppCompatActivity
                 PrefUtils.saveToPrefs(MainActivity.this, "USER", user.getText().toString());
                 PrefUtils.saveToPrefs(MainActivity.this, "PASS", pass.getText().toString());
 
-                Toast.makeText(MainActivity.this, "Your login credentials have been changed", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Your login credentials have been changed",
+                        Toast.LENGTH_LONG).show();
             }
         });
 
@@ -542,24 +593,17 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_timesheet)
         {
             setAlertDialog();
-        }
-
-        if (id == R.id.action_password)
+        } else if (id == R.id.action_password)
         {
             setPasswordDialog();
-        }
-
-        if (id == R.id.action_help)
+        } else if (id == R.id.action_help)
         {
             new PopupInfo(this, R.layout.help_popup, R.id.ll_shift_holder).display();
-        }
-
-        if (id == R.id.action_about)
+        } else if (id == R.id.action_about)
         {
             new PopupInfo(this, R.layout.about_popup, R.id.ll_shift_holder).display();
         }
 
         return super.onOptionsItemSelected(item);
     }
-
 }

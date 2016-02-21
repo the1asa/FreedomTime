@@ -14,13 +14,19 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 /**
- * Created by t410 on 12/29/2015.
+ * Dialog that communicates selected date formatted as MM/dd/yy and dd-MMM-yyyy via handler.
+ * Instantiated by passing a Handler object to newInstance(Handler h)
  */
-public class DatePickerFragment extends DialogFragment //implements TimePickerDialog.OnTimeSetListener
+public class DatePickerFragment extends DialogFragment
 {
-
     Handler h;
 
+    /**
+     * Instantiates a DatePickerFragment with Handler object
+     *
+     * @param h the Handler object to associate with a DatePickerFragment
+     * @return an instantiated DatePickerFragment
+     */
     public static final DatePickerFragment newInstance(Handler h)
     {
         DatePickerFragment dpf = new DatePickerFragment();
@@ -28,6 +34,9 @@ public class DatePickerFragment extends DialogFragment //implements TimePickerDi
         return dpf;
     }
 
+    /**
+     * Dialog listener, creates and sends a message via Handler object once a date is selected
+     */
     private DatePickerDialog.OnDateSetListener callback = new DatePickerDialog.OnDateSetListener()
     {
         @Override
@@ -43,14 +52,6 @@ public class DatePickerFragment extends DialogFragment //implements TimePickerDi
             String fullDate = fullDateFormat.format(cal.getTime());
             String imageDate = imageDateFormat.format(cal.getTime());
 
-//            // hacky, SimpleDateFormat.format(Date date) gives one day ahead with custom Date's
-//            Date date = new Date(year, monthOfYear, dayOfMonth - 1);
-//            String dayOfWeek = dayFormat.format(date);
-//
-//            // normal use
-//            date = new Date(year, monthOfYear, dayOfMonth);
-//            String fullDate = fullDateFormat.format(date);
-
             Message msg = new Message();
             Bundle data = new Bundle();
             data.putString("FULL_DATE", fullDate.toUpperCase());
@@ -60,7 +61,14 @@ public class DatePickerFragment extends DialogFragment //implements TimePickerDi
         }
     };
 
-    public Dialog onCreateDialog(Bundle bundle){
+    /**
+     * Creates a TimePickerDialog that displays the current time.
+     *
+     * @param bundle
+     * @return a TimePickerDialog
+     */
+    public Dialog onCreateDialog(Bundle bundle)
+    {
         final Calendar c = Calendar.getInstance();
         int dayOfMonth = c.get(Calendar.DAY_OF_MONTH);
         int monthOfYear = c.get(Calendar.MONTH);
