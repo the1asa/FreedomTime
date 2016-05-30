@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">Freedom Time</string>
+    <string name="action_settings">Settings</string>
+    <string name="tv_select">Select day: </string>
+    <string name="tv_in_time">Clock in time: </string>
+    <string name="tv_out_time">Clock out time: </string>
+    <string name="b_ibAddShift">Calculate</string>
+    <string name="action_help">Press the \'+\' button to save all shifts for a SINGLE position
+                                (e.g. Lifeguard).\n\n
+                                Tap the \'$\' button to calculate total hours worked and estimated
+                                pay (before tax).\n\n
+                                When you have entered all the shifts for a SINGLE position, tap the
+                                time sheet button on the action bar, log on to Patriot Web and
+                                select a time sheet.
+    </string>
+    <string name="action_about">Times are rounded as following:\n\n
+                                0-7 minutes = 0.0\n
+                                8-22 minutes = 0.25\n
+                                23-37 minutes = 0.5\n
+                                38-52 minutes = 0.75\n
+                                53-60 minutes = 1.0\n\n
+                                This is a work in progress, check all times entered for accuracy!\n\n
+                                Icons are courtesy of www.icons8.com
+    </string>
+
+    <string name="title_activity_timesheet_login">Time Sheet</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_login">Timesheet</string>
+    <string name="title_activity_password">Change Saved Password</string>
+    <string name="action_password">Your password has been saved</string>
+</resources>
